@@ -1,26 +1,11 @@
-const printSingleFullRow = (number) => {
-    let row = '';
-    for (i = 0; i < number; i++) {
-        row = row + '*'
-    }
-    console.log(row);
-}
+const express = require('express');
+const app = express();
+const PORT = 2127;
 
-const printGapBetweenStars = (number) => {
-    let row = '*'
-    for (let i = 0; i < number - 2; i++) {
-        row += ' ';
-    }
-    row += '*'
-    console.log(row);
-}
+app.get('/' , (req , res) => {
+    res.send('Hii hello there...')
+})
 
-const printThem = (number) => {
-        printSingleFullRow(number)
-        for (j = 0; j < number - 2; j++) {
-            printGapBetweenStars(number)
-        }
-        printSingleFullRow(number)
-}
-
-printThem(10)
+app.listen(PORT, () => {
+    console.log(`Listning on port ${PORT}`);
+})

@@ -47,6 +47,15 @@
         .todo-form button:hover {
             background-color: #0056b3;
         }
+
+        .todos {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            padding: 2px 10px;
+            margin: 2px 10px;
+            border: 1px solid black;
+        }
     </style>
 </head>
 
@@ -55,10 +64,24 @@
         <input type="text" id="title" placeholder="Enter title here...">
         <input type="text" id="description" placeholder="Enter description here...">
         <button onclick="handleSubmit()">Submit</button>
-        <button onclick="handleGetAllTodos()" style="margin-top: 15px;">Get All todos</button>
+
+        <div class="todos">
+            <h3>Title</h3>
+            <p>description</p>
+        </div>
+
     </div>
 
     <script>
+
+        // Send a GET request to retrieve all todos
+        fetch('http://localhost:3000/todos')
+            .then(response => response.json())
+            .then(data => console.log(data))
+            .catch(error => console.log(error))
+
+        const todosElement = document.getElementsByClassName('todos')
+
         const handleSubmit = () => {
             const title = document.getElementById('title').value;
             const description = document.getElementById('description').value;
@@ -79,13 +102,6 @@
                 .catch(error => console.log(error))
         }
 
-        const handleGetAllTodos = () => {
-            // Send a GET request to retrieve all todos
-            fetch('http://localhost:3000/todos')
-                .then(response => response.json())
-                .then(data => console.log(data))
-                .catch(error => console.log(error))
-        }
     </script>
 </body>
 

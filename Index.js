@@ -2,7 +2,9 @@ const fs = require('fs');
 const express = require('express');
 const path = require('path');
 const app = express();
+const jwt = require('jsonwebtoken');
 
+const secret = 'your_very_strong_and_secret_key';
 app.use(express.json());
 
 app.get('/', (req, res) => {
@@ -26,11 +28,14 @@ app.post('/', (req, res) => {
         if(err) throw err;
 
         const todoData = JSON.parse(data);
-        
+        const payload = { email: 'haseebshaikh@gmail.com' }
+        const token = jwt.sign(payload, secret, { expiresIn: '1h' });
+
         const todoObj = {
             id: id,
-            title: req.body.title,
-            description: req.body.description
+            title: req?.body?.title,
+            description: req?.body?.description,
+            token
         };
 
         todoData.push(todoObj);
@@ -48,26 +53,43 @@ app.post('/', (req, res) => {
 
 app.delete('/todo/:id', (req, res) => {
     const deleteId = parseInt(req.params.id);
-    fs.readFile('todo.json', 'utf-8', (err, data) => {
-        if (err) throw err;
+    const token = req.headers.authorization;
+    
+    try {
+        const decode = jwt.verify(token, secret);
+        console.log(decode);
 
-        const todoData = JSON.parse(data)
+        if (decode) {
+            fs.readFile('todo.json', 'utf-8', (err, data) => {
+                if (err) {
+                    console.error('Error reading file:', err);
+                    return res.status(500).send('Internal Server Error');
+                }
 
-        const filterTodos = todoData.filter(todo => todo.id !== deleteId);
+                const todoData = JSON.parse(data);
+                const filteredTodos = todoData.filter(todo => todo.id !== deleteId);
 
-        if (filterTodos.length !== todoData.length) {
-            fs.writeFile('todo.json', JSON.stringify(filterTodos), (err) => {
-                if (err) throw err
+                if (filteredTodos.length !== todoData.length) {
+                    fs.writeFile('todo.json', JSON.stringify(filteredTodos), (err) => {
+                        if (err) {
+                            console.error('Error writing file:', err);
+                            return res.status(500).send('Internal Server Error');
+                        }
 
-                console.log(`Todo with ID ${deleteId} has been deleted.`);
-                res.sendStatus(200);
-            })
-        } else {
-            // No todo was deleted
-            res.status(404).send("Todo not found");
+                        console.log(`Todo with ID ${deleteId} has been deleted.`);
+                        return res.sendStatus(200);
+                    });
+                } else {
+                    // No todo was deleted
+                    return res.status(404).send("Todo not found");
+                }
+            });
         }
-    });
-})
+    } catch (error) {
+        console.error('Token verification failed:', error);
+        return res.status(401).send('Unauthorized');
+    }
+});
 
 app.listen(3000, () => {
     console.log(`It's listning on port ${3000}`);

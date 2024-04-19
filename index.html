@@ -1,108 +1,97 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Todo List</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <title>Socket.IO chat</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
+            margin: 0;
+            padding-bottom: 3rem;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        #form {
+            background: rgba(0, 0, 0, 0.15);
+            padding: 0.25rem;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            display: flex;
+            height: 3rem;
+            box-sizing: border-box;
+            backdrop-filter: blur(10px);
+        }
+
+        #input {
+            border: none;
+            padding: 0 1rem;
+            flex-grow: 1;
+            border-radius: 2rem;
+            margin: 0.25rem;
+        }
+
+        #input:focus {
+            outline: none;
+        }
+
+        #form>button {
+            background: #333;
+            border: none;
+            padding: 0 1rem;
+            margin: 0.25rem;
+            border-radius: 3px;
+            outline: none;
+            color: #fff;
+        }
+
+        #messages {
+            list-style-type: none;
             margin: 0;
             padding: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            background-color: #f4f4f4;
         }
 
-        .todo-form {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            background-color: #fff;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        #messages>li {
+            padding: 0.5rem 1rem;
         }
 
-        .todo-form input {
-            width: 300px;
-            padding: 10px;
-            margin: 5px 0;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-        }
-
-        .todo-form button {
-            padding: 10px 20px;
-            background-color: #007bff;
-            color: #fff;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-
-        .todo-form button:hover {
-            background-color: #0056b3;
-        }
-
-        .todos {
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            padding: 2px 10px;
-            margin: 2px 10px;
-            border: 1px solid black;
+        #messages>li:nth-child(odd) {
+            background: #efefef;
         }
     </style>
 </head>
 
 <body>
-    <div class="todo-form">
-        <input type="text" id="title" placeholder="Enter title here...">
-        <input type="text" id="description" placeholder="Enter description here...">
-        <button onclick="handleSubmit()">Submit</button>
-
-        <div class="todos">
-            <h3>Title</h3>
-            <p>description</p>
-        </div>
-
-    </div>
-
-    <script>
-
-        // Send a GET request to retrieve all todos
-        fetch('http://localhost:3000/todos')
-            .then(response => response.json())
-            .then(data => console.log(data))
-            .catch(error => console.log(error))
-
-        const todosElement = document.getElementsByClassName('todos')
-
-        const handleSubmit = () => {
-            const title = document.getElementById('title').value;
-            const description = document.getElementById('description').value;
-
-            // Send a POST request to add the todo
-            const data = { title, description }
-
-            // Send a POST request to add the todo
-            fetch('http://localhost:3000/', {
-                method: 'POST',
-                headers: {
-                    'Content-type': 'application/json'
-                },
-                body: JSON.stringify(data)
-            })
-                .then(response => response.json())
-                .then(data => console.log(data))
-                .catch(error => console.log(error))
-        }
-
-    </script>
+    <ul id="messages"></ul>
+    <form id="form" action="">
+        <input id="input" autocomplete="off" /><button>Send</button>
+    </form>
 </body>
+
+<script src="/socket.io/socket.io.js"></script>
+<script>
+    const socket = io();
+
+    const form = document.getElementById('form');
+    const input = document.getElementById('input');
+    const messages = document.getElementById('messages');
+
+    form.addEventListener('submit', (event) => {
+        event.preventDefault();
+        if (input.value) {
+            socket.emit('chat messages', input.value);
+            input.value = '';
+            input.focus()
+        }
+    });
+
+    socket.on('chat messages', (message) => {
+        const item = document.createElement('li');
+        item.textContent = message;
+        messages.appendChild(item);
+        window.scrollTo(0, document.body.scrollHeight);
+    })
+</script>
 
 </html>

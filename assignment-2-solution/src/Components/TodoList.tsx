@@ -2,10 +2,17 @@ import React, { useContext, useState, useEffect } from 'react';
 import { authState } from '../store/authState.js';
 import {useRecoilValue} from "recoil";
 
+interface Todo {
+    _id: string,
+    title: string,
+    description: string,
+    done: boolean,
+}
+
 const TodoList = () => {
-    const [todos, setTodos] = useState([]);
-    const [title, setTitle] = useState('');
-    const [description, setDescription] = useState('');
+    const [todos, setTodos] = useState<Todo[]>([]);
+    const [title, setTitle] = useState<string>('');
+    const [description, setDescription] = useState<string>('');
     const authStateValue = useRecoilValue(authState);
 
     useEffect(() => {
@@ -14,7 +21,7 @@ const TodoList = () => {
                 headers: { Authorization: `Bearer ${localStorage.getItem("token")}` }
             });
             // Todo: Create a type for the response that you get back from the server
-            const data = await response.json();
+            const data:Todo[] = await response.json();
             setTodos(data);
         };
         getTodos();
